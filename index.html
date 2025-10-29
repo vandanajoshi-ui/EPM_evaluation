@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Evaluation Analysis - Functional Criteria</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
+            padding: 24px;
+            color: #1e293b;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            margin-bottom: 24px;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 16px;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            margin-bottom: 16px;
+        }
+        
+        .chart-wrapper-tall {
+            height: 400px;
+        }
+        
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .score-item {
+            text-align: center;
+        }
+        
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .score-label {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .filter-section {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .filter-label {
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .filter-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .cfo-preferences {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .cfo-card {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #8b5cf6;
+        }
+        
+        .cfo-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        
+        .vendor-rank {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+        
+        .rank-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            margin-right: 12px;
+            font-size: 0.9rem;
+        }
+        
+        .rank-1 { background: #10b981; }
+        .rank-2 { background: #3b82f6; }
+        .rank-3 { background: #f59e0b; }
+        
+        .vendor-info {
+            flex: 1;
+        }
+        
+        .vendor-name-rank {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+        
+        .vendor-score {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .insight-card {
+            padding: 16px;
+            border-radius: 8px;
+        }
+        
+        .insight-purple {
+            background: #faf5ff;
+        }
+        
+        .insight-blue {
+            background: #eff6ff;
+        }
+        
+        .insight-green {
+            background: #f0fdf4;
+        }
+        
+        .insight-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .insight-purple .insight-title {
+            color: #7c3aed;
+        }
+        
+        .insight-blue .insight-title {
+            color: #2563eb;
+        }
+        
+        .insight-green .insight-title {
+            color: #16a34a;
+        }
+        
+        .insight-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .insight-purple .insight-value {
+            color: #581c87;
+        }
+        
+        .insight-blue .insight-value {
+            color: #1e3a8a;
+        }
+        
+        .insight-green .insight-value {
+            color: #14532d;
+        }
+        
+        .insight-subtitle {
+            font-size: 0.875rem;
+        }
+        
+        .insight-purple .insight-subtitle {
+            color: #7c3aed;
+        }
+        
+        .insight-blue .insight-subtitle {
+            color: #2563eb;
+        }
+        
+        .insight-green .insight-subtitle {
+            color: #16a34a;
+        }
+        
+        @media (max-width: 1024px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .score-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Vendor Evaluation Analysis - Functional Criteria</h1>
+            <p>Comprehensive functional capabilities assessment across all CFO evaluations</p>
+        </div>
+        
+        <!-- Overall Scores -->
+        <div class="card">
+            <h2>Overall Scores</h2>
+            <div class="chart-wrapper">
+                <canvas id="overallChart"></canvas>
+            </div>
+            <div class="score-grid">
+                <div class="score-item">
+                    <div class="score-value" style="color: #3b82f6;">3.016</div>
+                    <div class="score-label">Onestream</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" style="color: #10b981;">3.970</div>
+                    <div class="score-label">Board</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" style="color: #f59e0b;">3.429</div>
+                    <div class="score-label">Anaplan</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" style="color: #ef4444;">3.262</div>
+                    <div class="score-label">Oracle</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" style="color: #8b5cf6;">4.048</div>
+                    <div class="score-label">Wolters Kluwer</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CFO Preferences Filter -->
+        <div class="card">
+            <h2>CFO Vendor Preferences - Top 3</h2>
+            <div class="filter-section">
+                <label class="filter-label">Filter by CFO:</label>
+                <select class="filter-select" id="cfoFilter" onchange="updatePreferences()">
+                    <!-- <option value="all">All CFOs</option>
+                    <option value="CXO 1">Arsina</option>
+                    <option value="CXO 2">Averen</option>
+                    <option value="CXO 3">Gary</option>
+                    <option value="CXO 4">Gaurav</option>
+                    <option value="CXO 5">Kashif</option>
+                    <option value="CXO 6">Viki</option> -->
+                    <option value="all">All CFOs</option>
+                    <option value="CXO 1">CXO 1</option>
+                    <option value="CXO 2">CXO 2</option>
+                    <option value="CXO 3">CXO 3</option>
+                    <option value="CXO 4">CXO 4</option>
+                    <option value="CXO 5">CXO 5</option>
+                    <option value="CXO 6">CXO 6</option>
+                </select>
+            </div>
+            <div id="preferencesContainer" class="cfo-preferences"></div>
+        </div>
+        
+        <!-- Detailed Analysis Grid -->
+        <div class="grid-2">
+            <div class="card">
+                <h2>Functional Capabilities Radar</h2>
+                <div class="chart-wrapper">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Top Functional Features Comparison</h2>
+                <div class="chart-wrapper">
+                    <canvas id="topFeaturesChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Functional Analysis -->
+        <div class="card">
+            <h2>All Functional Capabilities</h2>
+            <div class="chart-wrapper chart-wrapper-tall">
+                <canvas id="allFeaturesChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Key Insights -->
+        <div class="card">
+            <h2>Key Insights</h2>
+            <div class="insights-grid">
+                <div class="insight-card insight-purple">
+                    <div class="insight-title">Top Performer</div>
+                    <div class="insight-value">Wolters Kluwer</div>
+                    <div class="insight-subtitle">Overall Score: 4.048</div>
+                </div>
+                <div class="insight-card insight-blue">
+                    <div class="insight-title">Strong Second</div>
+                    <div class="insight-value">Board</div>
+                    <div class="insight-subtitle">Score: 3.970 - Consistent across CFOs</div>
+                </div>
+                <div class="insight-card insight-green">
+                    <div class="insight-title">No. of Responses Considered</div>
+                    <div class="insight-value">6</div>
+                    <!-- <div class="insight-subtitle">Wolters Kluwer: 4.55</div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const colors = {
+            onestream: '#3b82f6',
+            board: '#10b981',
+            anaplan: '#f59e0b',
+            oracle: '#ef4444',
+            wolters: '#8b5cf6'
+        };
+        
+        const cfoData = {
+            'CXO 1': {
+                onestream: 2.112676056,
+                board: 3.915492958,
+                anaplan: 2.577464789,
+                oracle: 2.338028169,
+                wolters: 4.098591549
+            },
+            'CXO 2': {
+                onestream: 3.509090909,
+                board: 4.142857143,
+                anaplan: 3.644067797,
+                oracle: 3.508474576,
+                wolters: 3.816666667
+            },
+            'CXO 3': {
+                onestream: 3.473684211,
+                board: 4.368421053,
+                anaplan: 3.710526316,
+                oracle: 4.131578947,
+                wolters: 4.5
+            },
+            'CXO 4': {
+                onestream: 2.971830986,
+                board: 3.814285714,
+                anaplan: 3.507246377,
+                oracle: 3.114285714,
+                wolters: 3.985915493
+            },
+            'CXO 5': {
+                onestream: 3.288461538,
+                board: 3.489795918,
+                anaplan: 3.711538462,
+                oracle: 3.74,
+                wolters: 4.019230769
+            },
+            'CXO 6': {
+                onestream: 3.257142857,
+                board: 4.425,
+                anaplan: 3.85,
+                oracle: 3.375,
+                wolters: 4.025
+            }
+        };
+        
+        const allFeatures = [
+            { name: 'Account Reconciliation', onestream: 2.833, board: 3.5, anaplan: 2.667, oracle: 3.833, wolters: 4 },
+            { name: 'Amortisation & Impairment', onestream: 2, board: 4, anaplan: 3.667, oracle: 3.333, wolters: 3.667 },
+            { name: 'Close Management', onestream: 3.667, board: 3.667, anaplan: 3.333, oracle: 3.667, wolters: 4 },
+            { name: 'Collaboration & Workflow', onestream: 3.333, board: 4, anaplan: 4, oracle: 3.333, wolters: 4 },
+            { name: 'Cost Allocation', onestream: 3, board: 4.333, anaplan: 3.667, oracle: 3, wolters: 4.333 },
+            { name: 'Data Submission', onestream: 3.333, board: 4, anaplan: 3, oracle: 4, wolters: 4 },
+            { name: 'Data Validation', onestream: 3.667, board: 3, anaplan: 3.5, oracle: 3.5, wolters: 4 },
+            { name: 'Financial Consolidation', onestream: 3.667, board: 3.5, anaplan: 4.167, oracle: 3.5, wolters: 4 },
+            { name: 'Financial Reporting', onestream: 3.433, board: 4.389, anaplan: 4.056, oracle: 3.833, wolters: 3.822 },
+            { name: 'Management Insights', onestream: 3.333, board: 4.111, anaplan: 4, oracle: 3.667, wolters: 4.111 },
+            { name: 'Planning', onestream: 3, board: 4.167, anaplan: 3.833, oracle: 3.333, wolters: 3.833 },
+            { name: 'User Experience', onestream: 3, board: 4, anaplan: 4.333, oracle: 4, wolters: 4 }
+        ];
+        
+        const topFeatures = [
+            { name: 'Financial Reporting', onestream: 3.433, board: 4.389, anaplan: 4.056, oracle: 3.833, wolters: 3.822 },
+            { name: 'Management Insights', onestream: 3.333, board: 4.111, anaplan: 4, oracle: 3.667, wolters: 4.111 },
+            { name: 'Planning', onestream: 3, board: 4.167, anaplan: 3.833, oracle: 3.333, wolters: 3.833 },
+            { name: 'User Experience', onestream: 3, board: 4, anaplan: 4.333, oracle: 4, wolters: 4 },
+            { name: 'Financial Consolidation', onestream: 3.667, board: 3.5, anaplan: 4.167, oracle: 3.5, wolters: 4 }
+        ];
+        
+        const radarFeatures = [
+            { feature: 'Account Reconciliation', onestream: 2.833, board: 3.5, anaplan: 2.667, oracle: 3.833, wolters: 4 },
+            { feature: 'Close Management', onestream: 3.667, board: 3.667, anaplan: 3.333, oracle: 3.667, wolters: 4 },
+            { feature: 'Financial Consolidation', onestream: 3.667, board: 3.5, anaplan: 4.167, oracle: 3.5, wolters: 4 },
+            { feature: 'Financial Reporting', onestream: 3.433, board: 4.389, anaplan: 4.056, oracle: 3.833, wolters: 3.822 },
+            { feature: 'Management Insights', onestream: 3.333, board: 4.111, anaplan: 4, oracle: 3.667, wolters: 4.111 }
+        ];
+        
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                }
+            }
+        };
+        
+        // Overall Chart
+        new Chart(document.getElementById('overallChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Onestream', 'Board', 'Anaplan', 'Oracle', 'Wolters Kluwer'],
+                datasets: [{
+                    label: 'Overall Functional Score',
+                    data: [3.01552795, 3.969594595, 3.428571429, 3.262195122, 4.048192771],
+                    backgroundColor: [
+                        colors.onestream,
+                        colors.board,
+                        colors.anaplan,
+                        colors.oracle,
+                        colors.wolters
+                    ]
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5
+                    }
+                }
+            }
+        });
+        
+        // Radar Chart
+        new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: {
+                labels: radarFeatures.map(f => f.feature),
+                datasets: [
+                    {
+                        label: 'Onestream',
+                        data: radarFeatures.map(f => f.onestream),
+                        borderColor: colors.onestream,
+                        backgroundColor: colors.onestream + '33'
+                    },
+                    {
+                        label: 'Board',
+                        data: radarFeatures.map(f => f.board),
+                        borderColor: colors.board,
+                        backgroundColor: colors.board + '33'
+                    },
+                    {
+                        label: 'Anaplan',
+                        data: radarFeatures.map(f => f.anaplan),
+                        borderColor: colors.anaplan,
+                        backgroundColor: colors.anaplan + '33'
+                    },
+                    {
+                        label: 'Oracle',
+                        data: radarFeatures.map(f => f.oracle),
+                        borderColor: colors.oracle,
+                        backgroundColor: colors.oracle + '33'
+                    },
+                    {
+                        label: 'Wolters Kluwer',
+                        data: radarFeatures.map(f => f.wolters),
+                        borderColor: colors.wolters,
+                        backgroundColor: colors.wolters + '33'
+                    }
+                ]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 5,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Top Features Chart
+        new Chart(document.getElementById('topFeaturesChart'), {
+            type: 'bar',
+            data: {
+                labels: topFeatures.map(f => f.name),
+                datasets: [
+                    {
+                        label: 'Onestream',
+                        data: topFeatures.map(f => f.onestream),
+                        backgroundColor: colors.onestream
+                    },
+                    {
+                        label: 'Board',
+                        data: topFeatures.map(f => f.board),
+                        backgroundColor: colors.board
+                    },
+                    {
+                        label: 'Anaplan',
+                        data: topFeatures.map(f => f.anaplan),
+                        backgroundColor: colors.anaplan
+                    },
+                    {
+                        label: 'Oracle',
+                        data: topFeatures.map(f => f.oracle),
+                        backgroundColor: colors.oracle
+                    },
+                    {
+                        label: 'Wolters Kluwer',
+                        data: topFeatures.map(f => f.wolters),
+                        backgroundColor: colors.wolters
+                    }
+                ]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+        
+        // All Features Chart
+        new Chart(document.getElementById('allFeaturesChart'), {
+            type: 'line',
+            data: {
+                labels: allFeatures.map(f => f.name),
+                datasets: [
+                    {
+                        label: 'Onestream',
+                        data: allFeatures.map(f => f.onestream),
+                        borderColor: colors.onestream,
+                        backgroundColor: colors.onestream,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Board',
+                        data: allFeatures.map(f => f.board),
+                        borderColor: colors.board,
+                        backgroundColor: colors.board,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Anaplan',
+                        data: allFeatures.map(f => f.anaplan),
+                        borderColor: colors.anaplan,
+                        backgroundColor: colors.anaplan,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Oracle',
+                        data: allFeatures.map(f => f.oracle),
+                        borderColor: colors.oracle,
+                        backgroundColor: colors.oracle,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Wolters Kluwer',
+                        data: allFeatures.map(f => f.wolters),
+                        borderColor: colors.wolters,
+                        backgroundColor: colors.wolters,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+        
+        function getTop3Vendors(scores) {
+            const vendors = [
+                { name: 'Onestream', score: scores.onestream, color: colors.onestream },
+                { name: 'Board', score: scores.board, color: colors.board },
+                { name: 'Anaplan', score: scores.anaplan, color: colors.anaplan },
+                { name: 'Oracle', score: scores.oracle, color: colors.oracle },
+                { name: 'Wolters Kluwer', score: scores.wolters, color: colors.wolters }
+            ];
+            
+            return vendors
+                .filter(v => v.score > 0)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3);
+        }
+        
+        function updatePreferences() {
+            const selected = document.getElementById('cfoFilter').value;
+            const container = document.getElementById('preferencesContainer');
+            
+            if (selected === 'all') {
+                // Show all CFOs
+                let html = '';
+                for (const [cfo, scores] of Object.entries(cfoData)) {
+                    const top3 = getTop3Vendors(scores);
+                    html += `
+                        <div class="cfo-card">
+                            <div class="cfo-name">${cfo}</div>
+                            ${top3.map((vendor, idx) => `
+                                <div class="vendor-rank">
+                                    <div class="rank-badge rank-${idx + 1}">${idx + 1}</div>
+                                    <div class="vendor-info">
+                                        <div class="vendor-name-rank">${vendor.name}</div>
+                                        <div class="vendor-score">Score: ${vendor.score.toFixed(3)}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+            } else {
+                // Show selected CFO
+                const scores = cfoData[selected];
+                const top3 = getTop3Vendors(scores);
+                container.innerHTML = `
+                    <div class="cfo-card" style="grid-column: 1 / -1;">
+                        <div class="cfo-name">${selected}</div>
+                        ${top3.map((vendor, idx) => `
+                            <div class="vendor-rank">
+                                <div class="rank-badge rank-${idx + 1}">${idx + 1}</div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name-rank">${vendor.name}</div>
+                                    <div class="vendor-score">Score: ${vendor.score.toFixed(3)}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+        
+        // Initialize with all CFOs
+        updatePreferences();
+    </script>
+</body>
+</html>
